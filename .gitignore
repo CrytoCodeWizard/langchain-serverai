@@ -1,0 +1,6 @@
+# byte-compiled / optimized / DLL files
+__pycache__/
+
+.env
+.venv
+/app/db/firebase-sdk.json
