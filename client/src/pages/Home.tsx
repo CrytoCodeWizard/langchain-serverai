@@ -3,34 +3,48 @@ import React, { useState } from 'react';
 interface ServerAIModel {
   id: string;
   name: string;
+  prompt: string;
   knowledge: string;
   comments: string;
 }
 
 interface PromptModel {
   id: string;
-  prompt: string;
+  name: string;
 }
 
 const initialServerAIs: ServerAIModel[] = [
-  { id: '1', name: 'ServerAIModel01', knowledge: 'Base Knowledge', comments: 'Initial comments' },
-  { id: '2', name: 'ServerAIModel02', knowledge: 'Extended Knowledge', comments: 'Secondary comments' },
+  {
+    id: '1',
+    name: 'ServerAIModel01',
+    prompt: 'this is test prompt 1',
+    knowledge: 'Base Knowledge',
+    comments: 'Initial comments'
+  },
+  {
+    id: '2',
+    name: 'ServerAIModel02',
+    prompt: 'this is test prompt 2',
+    knowledge: 'Extended Knowledge',
+    comments: 'Secondary comments'
+  },
 ];
 
 const initialPrompts: PromptModel[] = [
-  { id: '1', prompt: 'Sample Prompt 1' },
-  { id: '2', prompt: 'Sample Prompt 2' },
+  { id: '1', name: 'Sample Prompt 1' },
+  { id: '2', name: 'Sample Prompt 2' },
 ];
 
 const models = ["GPT 3.5 Turbo", "GPT 4.0"];
 
 const Home: React.FC = () => {
   const [serverAIs, setServerAIs] = useState<ServerAIModel[]>(initialServerAIs);
-  const [prompts, setPrompts] = useState<PromptModel[]>(initialPrompts);
+  const [promptModels, setPromptModels] = useState<PromptModel[]>(initialPrompts);
   const [selectedServerAIId, setSelectedServerAIId] = useState<string>(serverAIs[0].id);
   const [selectedModel, setSelectedModel] = useState<string>(models[0]);
   const [memoryEnabled, setMemoryEnabled] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
+  const [prompt, setPrompt] = useState<string>('');
   const [knowledge, setKnowledge] = useState<string>('');
   const [comments, setComments] = useState<string>('');
   const [newPrompt, setNewPrompt] = useState<string>('');
@@ -62,6 +76,7 @@ const Home: React.FC = () => {
     setSelectedServerAIId(event.target.value);
     if (selectedAI) {
       setName(selectedAI.name);
+      setPrompt(selectedAI.prompt);
       setKnowledge(selectedAI.knowledge);
       setComments(selectedAI.comments);
     }
@@ -76,9 +91,17 @@ const Home: React.FC = () => {
   };
 
   const createServerAI = () => {
-    const newAI = { id: Date.now().toString(), name, knowledge, comments };
+    const newAI = {
+        id: Date.now().toString(),
+        name,
+        prompt,
+        knowledge,
+        comments
+    };
+
     setServerAIs([...serverAIs, newAI]);
     setName('');
+    setPrompt('');
     setKnowledge('');
     setComments('');
     // Reset file after creating the server AI entry if required
@@ -89,15 +112,15 @@ const Home: React.FC = () => {
     setServerAIs(serverAIs.filter(ai => ai.id !== selectedServerAIId));
   };
 
-  const createPrompt = () => {
+  const createPromptModel = () => {
     const newId = `prompt-${Date.now()}`;
-    const newPromptEntry = { id: newId, prompt: newPrompt };
-    setPrompts([...prompts, newPromptEntry]);
+    const newPromptEntry = { id: newId, name: newPrompt };
+    setPromptModels([...promptModels, newPromptEntry]);
     setNewPrompt('');
   };
 
   const deletePrompt = (id: string) => {
-    setPrompts(prompts.filter(prompt => prompt.id !== id));
+    setPromptModels(promptModels.filter(model => model.id !== id));
   };
 
   return (
@@ -108,9 +131,10 @@ const Home: React.FC = () => {
       <div className="bg-white shadow-md rounded-lg p-4 mt-6">
         <div className="flex flex-row items-center justify-between">
           <div className="w-full mx-3 my-2 px-3 py-2 border rounded-md">
-            {prompts.map(prompt => (
+            <label className="block text-gray-700 text-sm font-bold mb-2">Prompt Model List</label>
+            {promptModels.map(prompt => (
               <div key={prompt.id} className="flex justify-between items-center px-2 py-1 bg-gray-100 mt-1 rounded">
-                <span>{prompt.prompt}</span>
+                <span>{prompt.name}</span>
                 <button
                   onClick={() => deletePrompt(prompt.id)}
                   className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
@@ -119,7 +143,7 @@ const Home: React.FC = () => {
                 </button>
               </div>
             ))}
-            <div>
+            <div className='flex flex-col items-start justify-between px-2 py-3'>
               <label className="block text-gray-700 text-sm font-bold mb-2">New Prompt</label>
               <input
                 type="text"
@@ -129,7 +153,7 @@ const Home: React.FC = () => {
                 onChange={e => setNewPrompt(e.target.value)}
               />
               <button
-                onClick={createPrompt}
+                onClick={createPromptModel}
                 className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
                 Create Prompt
@@ -167,17 +191,33 @@ const Home: React.FC = () => {
                 value={selectedServerAIId}
                 onChange={handleServerAIChange}
               >
-                {prompts.map(ai => (
-                  <option key={ai.id} value={ai.id}>{ai.prompt}</option>
+                {promptModels.map(ai => (
+                  <option
+                    key={ai.id}
+                    value={ai.id}>
+                      {ai.name}
+                    </option>
                 ))}
               </select>
             </div>
           </div>
         </div>
         <div className="mx-2 my-3 px-3 py-2 border rounded-md">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Knowledge</label>
+          <label className="block text-gray-700 text-lg font-bold mb-2">Prompt<span className='text-red-600 mx-1'>*</span></label>
+          <span className='text-sm text-gray-400 px-2'>Tell your bot how to behave and how to respond to user messages. Try to be as specific as possible.</span>
           <textarea
-            className="form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2"
+            className="form-textarea my-2 block w-full rounded-md border shadow-sm px-3 py-2"
+            rows={3}
+            placeholder="e.g. You are the CatBot. You will try to respond to the user's questions, but you get easily distracted."
+            value={prompt}
+            onChange={e => setPrompt(e.target.value)}
+          />
+        </div>
+        <div className="mx-2 my-3 px-3 py-2 border rounded-md">
+          <label className="block text-gray-700 text-lg font-bold mb-2">Knowledge base</label>
+          <span className='text-sm text-gray-400 px-2'>Provide custom knowledge that your bot will access to inform its responses. Your bot will retrieve relevant sections from the knowledge base based on the user message. The data in the knowledge base may be made viewable by other users through bot responses or citations.</span>
+          <textarea
+            className="form-textarea mt-1 block w-full rounded-md border shadow-sm px-3 py-2"
             rows={3}
             placeholder="Knowledge..."
             value={knowledge}
@@ -185,7 +225,7 @@ const Home: React.FC = () => {
           />
           <div className="mx-2 my-3">
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              Upload Knowledge File (TXT, PDF)
+              + Add Knowledge source
             </label>
             <div className="flex items-center space-x-4">
               <input
@@ -210,9 +250,9 @@ const Home: React.FC = () => {
           </div>
         </div>
         <div className="mx-2 my-3 px-3 py-2 border rounded-md">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Comments</label>
+          <label className="block text-gray-700 text-lg font-bold mb-2">Comments</label>
           <textarea
-            className="form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2"
+            className="form-textarea mt-1 block w-full rounded-md border shadow-sm px-3 py-2"
             rows={2}
             placeholder="Comments..."
             value={comments}
