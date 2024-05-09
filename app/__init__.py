@@ -1,6 +1,6 @@
 from flask import Flask
 from .api.routes import api_blueprint
-from .extensioins import init_extensions
+from .extensions import init_extensions
 from .config import Config
 
 def create_app():
